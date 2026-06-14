@@ -196,6 +196,38 @@
       padding: 28px 32px 32px;
     }
 
+    /* ── Mode toggle (segmented control) ── */
+    .mode-toggle {
+      display: flex;
+      gap: 4px;
+      padding: 4px;
+      background: var(--paper);
+      border: 1px solid var(--rule);
+      border-radius: 9px;
+      margin-bottom: 24px;
+    }
+
+    .mode-toggle button {
+      flex: 1;
+      padding: 10px 12px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+      color: var(--ink-2);
+      background: transparent;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: background 0.15s, color 0.15s, box-shadow 0.15s;
+    }
+
+    .mode-toggle button.active {
+      background: #fff;
+      color: var(--ink);
+      box-shadow: 0 1px 3px rgba(26,22,18,0.12);
+    }
+
     /* ── Fields ── */
     .field {
       margin-bottom: 22px;
@@ -211,7 +243,8 @@
       margin-bottom: 7px;
     }
 
-    .field input {
+    .field input[type="text"],
+    .field input[type="password"] {
       width: 100%;
       padding: 11px 14px;
       font-family: 'DM Sans', sans-serif;
@@ -239,6 +272,46 @@
       color: var(--ink-3);
       font-weight: 300;
     }
+
+    /* ── File dropzone ── */
+    .dropzone {
+      border: 1.5px dashed var(--rule);
+      border-radius: 9px;
+      background: var(--paper);
+      padding: 26px 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: border-color 0.15s, background 0.15s;
+    }
+    .dropzone:hover, .dropzone.dragover {
+      border-color: var(--gold);
+      background: var(--gold-light);
+    }
+    .dropzone svg {
+      width: 26px; height: 26px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    .dropzone-text {
+      font-size: 14px;
+      color: var(--ink-2);
+    }
+    .dropzone-text strong { color: var(--ink); font-weight: 500; }
+    .dropzone-sub {
+      font-size: 12px;
+      color: var(--ink-3);
+      margin-top: 4px;
+      font-weight: 300;
+    }
+    .dropzone.has-file {
+      border-style: solid;
+      border-color: var(--green);
+      background: var(--green-light);
+    }
+    .dropzone.has-file svg, .dropzone.has-file .dropzone-text strong { color: var(--green); }
+    #file-input { display: none; }
+
+    .hidden { display: none !important; }
 
     /* ── Button ── */
     .btn-primary {
@@ -272,6 +345,28 @@
       opacity: 0.55;
       cursor: not-allowed;
     }
+
+    /* ── Download button in result ── */
+    .btn-download {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      margin-top: 12px;
+      padding: 11px 18px;
+      background: var(--green);
+      color: #fff;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 14px;
+      font-weight: 500;
+      border: none;
+      border-radius: 7px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: background 0.15s, transform 0.1s;
+    }
+    .btn-download:hover { background: #34593f; }
+    .btn-download:active { transform: scale(0.99); }
+    .btn-download svg { width: 16px; height: 16px; }
 
     /* ── Spinner ── */
     .spinner {
@@ -414,30 +509,52 @@
       <!-- ── FORM SCREEN ── -->
       <div id="form-screen">
         <div class="form-header">
-          <h2>New Transcript</h2>
-          <p>Paste the SoferAI link and set a title to begin editing.</p>
+          <h2>New Document</h2>
+          <p>Choose a source, set a title, and download the edited Word file.</p>
         </div>
         <div class="form-body">
 
-          <div class="field">
+          <!-- Source toggle -->
+          <div class="mode-toggle">
+            <button id="mode-sofer-btn" class="active" onclick="setMode('sofer')">SoferAI Link</button>
+            <button id="mode-upload-btn" onclick="setMode('upload')">Upload Word Doc</button>
+          </div>
+
+          <!-- SoferAI source -->
+          <div class="field" id="sofer-field">
             <label for="transcript_url">SoferAI Transcript URL</label>
             <input type="text" id="transcript_url" placeholder="https://app.sofer.ai/transcript/…" autocomplete="off" spellcheck="false">
             <div class="field-hint">Paste the full link from your SoferAI transcript page.</div>
           </div>
 
+          <!-- Upload source -->
+          <div class="field hidden" id="upload-field">
+            <label>Word Document</label>
+            <div class="dropzone" id="dropzone" onclick="document.getElementById('file-input').click()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <path d="M7 10l5-5 5 5"/>
+                <path d="M12 5v12"/>
+              </svg>
+              <div class="dropzone-text"><strong id="dropzone-title">Click to choose a .docx file</strong></div>
+              <div class="dropzone-sub" id="dropzone-sub">or drag and drop it here</div>
+            </div>
+            <input type="file" id="file-input" accept=".docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document">
+          </div>
+
           <div class="field">
             <label for="title">Document Title</label>
             <input type="text" id="title" placeholder="e.g. Parasha Q&A — 7 Kislev 5785">
-            <div class="field-hint">This will become the name of the Google Doc.</div>
+            <div class="field-hint">This becomes the name of the downloaded Word file.</div>
           </div>
 
-          <button class="btn-primary" id="submit-btn" onclick="submitTranscript()">
+          <button class="btn-primary" id="submit-btn" onclick="submitDocument()">
             <div class="spinner" id="spinner"></div>
-            <span id="submit-label">Create Document</span>
+            <span id="submit-label">Edit &amp; Download</span>
           </button>
 
           <div class="progress-wrap" id="progress-wrap">
-            <div class="progress-label" id="progress-label">Fetching transcript…</div>
+            <div class="progress-label" id="progress-label">Working…</div>
             <div class="progress-track"><div class="progress-bar" id="progress-bar"></div></div>
           </div>
 
@@ -458,8 +575,10 @@
     // ─────────────────────────────────────────────
     const API_ENDPOINT  = "https://transcript-editor-355421610683.europe-west1.run.app";
     const ACCESS_CODE   = "WeLoveHashem";
-    const FOLDER_PATH   = "תורה/Transcriptions";
     // ─────────────────────────────────────────────
+
+    let currentMode = 'sofer';     // 'sofer' | 'upload'
+    let selectedFile = null;       // File object for upload mode
 
     // Allow Enter key on password field
     document.getElementById('password-input').addEventListener('keydown', function(e) {
@@ -468,7 +587,7 @@
 
     // Allow Enter key on title field to submit
     document.getElementById('title').addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') submitTranscript();
+      if (e.key === 'Enter') submitDocument();
     });
 
     function checkPassword() {
@@ -486,7 +605,6 @@
         err.style.display = 'block';
         document.getElementById('password-input').value = '';
         document.getElementById('password-input').focus();
-        // Shake animation
         const input = document.getElementById('password-input');
         input.style.borderColor = 'var(--red)';
         input.style.boxShadow = '0 0 0 3px var(--red-light)';
@@ -495,6 +613,64 @@
           input.style.boxShadow = '';
         }, 1200);
       }
+    }
+
+    // ── Mode switching ──
+    function setMode(mode) {
+      currentMode = mode;
+      const isSofer = mode === 'sofer';
+      document.getElementById('mode-sofer-btn').classList.toggle('active', isSofer);
+      document.getElementById('mode-upload-btn').classList.toggle('active', !isSofer);
+      document.getElementById('sofer-field').classList.toggle('hidden', !isSofer);
+      document.getElementById('upload-field').classList.toggle('hidden', isSofer);
+      // Clear any prior result/error when switching
+      const resultMsg = document.getElementById('result-msg');
+      resultMsg.style.display = 'none';
+      if (isSofer) document.getElementById('transcript_url').focus();
+    }
+
+    // ── File selection + drag/drop ──
+    const fileInput = document.getElementById('file-input');
+    const dropzone  = document.getElementById('dropzone');
+
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files && fileInput.files.length) handleFile(fileInput.files[0]);
+    });
+
+    ['dragenter', 'dragover'].forEach(evt =>
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.add('dragover'); })
+    );
+    ['dragleave', 'drop'].forEach(evt =>
+      dropzone.addEventListener(evt, e => { e.preventDefault(); dropzone.classList.remove('dragover'); })
+    );
+    dropzone.addEventListener('drop', e => {
+      if (e.dataTransfer.files && e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+
+    function handleFile(file) {
+      if (!file.name.toLowerCase().endsWith('.docx')) {
+        showError("Please choose a .docx file. (Legacy .doc files aren't supported — re-save as .docx first.)");
+        return;
+      }
+      selectedFile = file;
+      dropzone.classList.add('has-file');
+      document.getElementById('dropzone-title').textContent = file.name;
+      document.getElementById('dropzone-sub').textContent =
+        (file.size / 1024).toFixed(0) + ' KB · click to choose a different file';
+      // Auto-fill title from filename if empty
+      const titleField = document.getElementById('title');
+      if (!titleField.value.trim()) {
+        titleField.value = file.name.replace(/\.docx$/i, '');
+      }
+    }
+
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const r = new FileReader();
+        r.onload  = () => resolve(r.result.split(',')[1]);   // strip the data: prefix
+        r.onerror = () => reject(new Error("Could not read the selected file."));
+        r.readAsDataURL(file);
+      });
     }
 
     function extractUUID(url) {
@@ -506,17 +682,23 @@
     }
 
     // Simulated progress stages (actual work happens server-side)
-    const STAGES = [
-      { pct: 15, label: "Fetching transcript from SoferAI…" },
-      { pct: 35, label: "Splitting into chunks…" },
-      { pct: 55, label: "Editing with AI (this may take a minute)…" },
-      { pct: 80, label: "Finalising edits…" },
-      { pct: 92, label: "Creating Google Doc…" },
-    ];
+    function stagesFor(mode) {
+      const first = mode === 'upload'
+        ? { pct: 15, label: "Reading Word document…" }
+        : { pct: 15, label: "Fetching transcript from SoferAI…" };
+      return [
+        first,
+        { pct: 35, label: "Splitting into chunks…" },
+        { pct: 55, label: "Editing with AI (this may take a minute)…" },
+        { pct: 80, label: "Finalising edits…" },
+        { pct: 92, label: "Building Word document…" },
+      ];
+    }
 
     let stageTimer = null;
 
-    function startProgress() {
+    function startProgress(mode) {
+      const stages = stagesFor(mode);
       const wrap = document.getElementById('progress-wrap');
       const bar  = document.getElementById('progress-bar');
       const lbl  = document.getElementById('progress-label');
@@ -524,11 +706,10 @@
       bar.style.width = '0%';
       let i = 0;
       function advance() {
-        if (i >= STAGES.length) return;
-        bar.style.width = STAGES[i].pct + '%';
-        lbl.textContent = STAGES[i].label;
+        if (i >= stages.length) return;
+        bar.style.width = stages[i].pct + '%';
+        lbl.textContent = stages[i].label;
         i++;
-        // Space stages out unevenly to feel realistic
         const delay = i === 1 ? 800 : i === 2 ? 1200 : i === 3 ? 18000 : i === 4 ? 5000 : 4000;
         stageTimer = setTimeout(advance, delay);
       }
@@ -548,8 +729,27 @@
       }
     }
 
-    async function submitTranscript() {
-      const urlField   = document.getElementById('transcript_url');
+    // Turn base64 from the API into a downloadable Blob URL
+    function base64ToBlobUrl(b64) {
+      const bytes = atob(b64);
+      const arr = new Uint8Array(bytes.length);
+      for (let i = 0; i < bytes.length; i++) arr[i] = bytes.charCodeAt(i);
+      const blob = new Blob([arr], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document'
+      });
+      return URL.createObjectURL(blob);
+    }
+
+    function triggerDownload(url, filename) {
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    }
+
+    async function submitDocument() {
       const titleField = document.getElementById('title');
       const btn        = document.getElementById('submit-btn');
       const label      = document.getElementById('submit-label');
@@ -563,23 +763,25 @@
       document.getElementById('progress-bar').style.width = '0%';
       document.getElementById('progress-bar').style.background = 'var(--gold)';
 
-      const url   = urlField.value.trim();
       const title = titleField.value.trim();
-
-      if (!url) {
-        showError("Please enter a SoferAI transcript URL.");
-        urlField.focus();
-        return;
-      }
       if (!title) {
         showError("Please enter a document title.");
         titleField.focus();
         return;
       }
 
-      let transcriptionId;
+      // Build the payload based on the active source
+      let payload;
       try {
-        transcriptionId = extractUUID(url);
+        if (currentMode === 'sofer') {
+          const url = document.getElementById('transcript_url').value.trim();
+          if (!url) { showError("Please enter a SoferAI transcript URL."); return; }
+          payload = { source: 'sofer', transcription_id: extractUUID(url), title };
+        } else {
+          if (!selectedFile) { showError("Please choose a .docx file to upload."); return; }
+          const docx_base64 = await fileToBase64(selectedFile);
+          payload = { source: 'upload', docx_base64, title };
+        }
       } catch (e) {
         showError(e.message);
         return;
@@ -589,15 +791,9 @@
       btn.disabled = true;
       spinner.style.display = 'block';
       label.textContent = 'Processing…';
-      startProgress();
+      startProgress(currentMode);
 
       try {
-        const payload = {
-          transcription_id: transcriptionId,
-          title: title,
-          folder_path: FOLDER_PATH,
-        };
-
         const response = await fetch(API_ENDPOINT, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -609,22 +805,31 @@
         if (!response.ok) {
           throw new Error(data.error || `Server error (${response.status}). Please try again or contact support.`);
         }
-
-        if (!data.doc_url) {
-          throw new Error("The document was created but no link was returned. Check your Google Drive.");
+        if (!data.docx_base64) {
+          throw new Error("The document was processed but no file was returned. Please try again.");
         }
 
         finishProgress(true);
-        resultMsg.className = 'status success';
-        resultMsg.innerHTML = `
-          <strong>Document created successfully.</strong><br>
-          <a href="${data.doc_url}" target="_blank" rel="noopener">${data.doc_url}</a>
-        `;
-        resultMsg.style.display = 'block';
 
-        // Reset form fields on success
-        urlField.value = '';
-        titleField.value = '';
+        const filename = data.filename || (title + '.docx');
+        const blobUrl  = base64ToBlobUrl(data.docx_base64);
+
+        // Start the download automatically…
+        triggerDownload(blobUrl, filename);
+
+        // …and leave a button so it can be downloaded again without re-running.
+        const headingNote = data.headings_added ? '' : ' (no section headings were detected)';
+        resultMsg.className = 'status success';
+        resultMsg.innerHTML =
+          '<strong>Your Word document is ready.</strong>' + headingNote + '<br>' +
+          '<a class="btn-download" id="dl-again" href="' + blobUrl + '" download="' +
+            filename.replace(/"/g, '&quot;') + '">' +
+            '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" ' +
+            'stroke-linecap="round" stroke-linejoin="round">' +
+            '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>' +
+            '<path d="M7 10l5 5 5-5"/><path d="M12 15V3"/></svg>' +
+            'Download ' + filename + '</a>';
+        resultMsg.style.display = 'block';
 
       } catch (err) {
         finishProgress(false);
@@ -632,7 +837,7 @@
       } finally {
         btn.disabled = false;
         spinner.style.display = 'none';
-        label.textContent = 'Create Document';
+        label.textContent = 'Edit & Download';
       }
     }
 
